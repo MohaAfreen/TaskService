@@ -3,7 +3,9 @@ package com.taskflow.taskservice.service;
 import com.taskflow.taskservice.dto.TaskRequest;
 import com.taskflow.taskservice.dto.TaskResponse;
 import com.taskflow.taskservice.entity.Task;
+import com.taskflow.taskservice.enums.TaskStatus;
 import com.taskflow.taskservice.repository.TaskRepository;
+import com.taskflow.taskservice.utilities.TaskMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,55 +14,36 @@ import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
+
     private TaskRepository taskRepository;
 
     public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
 
-    public String createTask(TaskRequest request){
-        Task task= Task.builder()
-                .title(request.getTitle())
-                .description(request.getDescription())
-                .status(request.getStatus())
-                .userId(request.getUserId())
-                .build();
-        taskRepository.save(task);
-        return "Task created successfully";
+    public TaskResponse createTask(TaskRequest request,Long userId){
+        request.setStatus(TaskStatus.TODO);
+        Task task= TaskMapper.toEntity(request,userId);
+        return TaskMapper.toDTO(taskRepository.save(task));
     }
 
-    public String updateTask(TaskRequest request, Long taskid){
-        Optional<Task> task= taskRepository.findById(taskid);
-        if(!task.isEmpty()){
-            Task taskObj= Task.builder()
-                    .id(taskid)
-                    .title(request.getTitle())
-                    .description(request.getDescription())
-                    .status(request.getStatus())
-                    .userId(request.getUserId())
-                    .build();
-            taskRepository.save(taskObj);
-           return "Task updated successfully";
-        }
-
-        return "Task with given id does not exists";
+    public TaskResponse updateTask(TaskRequest request, Long taskid){
+        Task task= taskRepository.findById(taskid)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+        Task updatedTask= TaskMapper.toEntity(request,task.getUserId());
+        updatedTask.setId(taskid);
+        return TaskMapper.toDTO(taskRepository.save(updatedTask));
     }
 
-    public List<TaskResponse> getAllTasks(){
-        List<Task> taskList= taskRepository.findAll();
-        return convertToDtoList(taskList);
-    }
-
-   public List<TaskResponse> convertToDtoList(List<Task> taskList){
-        List<TaskResponse> taskResponseList=taskList.stream().map( task-> new TaskResponse
-                (task.getId(),
-                        task.getTitle(),
-                        task.getDescription(),
-                        task.getStatus(),
-                        task.getUserId()))
+    public List<TaskResponse> getTasksById(Long userId){
+        return taskRepository.findTaskByUserId(userId)
+                .stream()
+                .map(TaskMapper::toDTO)
                 .collect(Collectors.toList());
-        return taskResponseList;
-   }
 
+    }
 
+    public void deleteTaskById(Long taskId){
+        taskRepository.deleteById(taskId);
+    }
 }

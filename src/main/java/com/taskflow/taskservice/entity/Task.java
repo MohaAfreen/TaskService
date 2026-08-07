@@ -1,5 +1,6 @@
 package com.taskflow.taskservice.entity;
 
+import com.taskflow.taskservice.enums.TaskStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,7 +17,8 @@ public class Task {
     private Long id;
     private String title;
     private String description;
-    private String status;
     @Column(name="user_id")
     private Long userId;
+    @Enumerated(EnumType.STRING)
+    private TaskStatus taskStatus;
 }

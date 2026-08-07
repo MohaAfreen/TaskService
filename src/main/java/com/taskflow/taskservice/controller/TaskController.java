@@ -2,33 +2,46 @@ package com.taskflow.taskservice.controller;
 
 import com.taskflow.taskservice.dto.TaskRequest;
 import com.taskflow.taskservice.dto.TaskResponse;
+import com.taskflow.taskservice.entity.Task;
 import com.taskflow.taskservice.service.TaskService;
+import org.springframework.security.core.Authentication;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
 @RequestMapping("/tasks")
 public class TaskController {
 
-    private TaskService taskService;
+    private final TaskService taskService;
 
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
     }
 
     @PostMapping
-    public String createNewTask(@RequestBody TaskRequest request){
-        return taskService.createTask(request);
+    public ResponseEntity<TaskResponse> createNewTask(@RequestBody TaskRequest request, Authentication authentication){
+        Long userId= (Long)authentication.getPrincipal();
+        return ResponseEntity.ok(taskService.createTask(request,userId));
     }
 
     @GetMapping
-    public List<TaskResponse> getTaskDetails(){
-        return taskService.getAllTasks();
+    public ResponseEntity<List<TaskResponse>> getTaskDetails(Authentication authentication){
+        Long userId= (Long)authentication.getPrincipal();
+        return ResponseEntity.ok(taskService.getTasksById(userId));
     }
 
-    @PutMapping("/{id}")
-    public String updateTaskDetails(@PathVariable Long id,@RequestBody TaskRequest request){
-        return taskService.updateTask(request,id);
+    @PutMapping("/{taskId}")
+    public ResponseEntity<TaskResponse> updateTaskDetails(@PathVariable Long taskId,@RequestBody TaskRequest request){
+        return ResponseEntity.ok(taskService.updateTask(request,taskId));
+    }
+
+    @DeleteMapping("/{taskId}")
+    public ResponseEntity<String> deleteTaskById(@PathVariable Long taskId){
+        taskService.deleteTaskById(taskId);
+        return ResponseEntity.ok("Task deleted successfully");
     }
 }
