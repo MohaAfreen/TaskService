@@ -4,6 +4,7 @@ import com.taskflow.taskservice.dto.TaskRequest;
 import com.taskflow.taskservice.dto.TaskResponse;
 import com.taskflow.taskservice.entity.Task;
 import com.taskflow.taskservice.service.TaskService;
+import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<TaskResponse> createNewTask(@RequestBody TaskRequest request, Authentication authentication){
+    public ResponseEntity<TaskResponse> createNewTask(@Valid @RequestBody TaskRequest request, Authentication authentication){
         Long userId= (Long)authentication.getPrincipal();
         return ResponseEntity.ok(taskService.createTask(request,userId));
     }
@@ -35,7 +36,7 @@ public class TaskController {
     }
 
     @PutMapping("/{taskId}")
-    public ResponseEntity<TaskResponse> updateTaskDetails(@PathVariable Long taskId,@RequestBody TaskRequest request){
+    public ResponseEntity<TaskResponse> updateTaskDetails(@PathVariable Long taskId,@Valid @RequestBody TaskRequest request){
         return ResponseEntity.ok(taskService.updateTask(request,taskId));
     }
 

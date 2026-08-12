@@ -4,6 +4,7 @@ import com.taskflow.taskservice.dto.TaskRequest;
 import com.taskflow.taskservice.dto.TaskResponse;
 import com.taskflow.taskservice.entity.Task;
 import com.taskflow.taskservice.enums.TaskStatus;
+import com.taskflow.taskservice.exception.TaskNotFoundException;
 import com.taskflow.taskservice.repository.TaskRepository;
 import com.taskflow.taskservice.utilities.TaskMapper;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ public class TaskService {
 
     public TaskResponse updateTask(TaskRequest request, Long taskid){
         Task task= taskRepository.findById(taskid)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new TaskNotFoundException("Task not found"));
         Task updatedTask= TaskMapper.toEntity(request,task.getUserId());
         updatedTask.setId(taskid);
         return TaskMapper.toDTO(taskRepository.save(updatedTask));
