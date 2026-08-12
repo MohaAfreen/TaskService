@@ -44,4 +44,9 @@ public class TaskController {
         taskService.deleteTaskById(taskId);
         return ResponseEntity.ok("Task deleted successfully");
     }
+
+    @GetMapping("/admin/test")
+    public String adminTest() {
+        return "Admin endpoint accessed successfully";
+    }
 }

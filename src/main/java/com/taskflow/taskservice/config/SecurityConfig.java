@@ -18,7 +18,9 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http){
         http.csrf(csrf->csrf.disable())
                 .authorizeHttpRequests(auth->
-                        auth.requestMatchers("/auth/**").permitAll()
+                        auth
+                        .requestMatchers("/tasks/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/auth/**").permitAll()
                                 .requestMatchers("/tasks/**").hasAnyRole("USER", "ADMIN")
                                 .anyRequest().authenticated())
                 .sessionManagement(sess -> sess
