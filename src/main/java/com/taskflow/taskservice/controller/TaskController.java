@@ -5,6 +5,7 @@ import com.taskflow.taskservice.dto.TaskResponse;
 import com.taskflow.taskservice.entity.Task;
 import com.taskflow.taskservice.service.TaskService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -49,5 +50,13 @@ public class TaskController {
     @GetMapping("/admin/test")
     public String adminTest() {
         return "Admin endpoint accessed successfully";
+    }
+
+    @GetMapping("/test-retry")
+    public ResponseEntity<String> testRetry() {
+        System.out.println(">>> test-retry endpoint called");
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body("Task service unavailable");
     }
 }
