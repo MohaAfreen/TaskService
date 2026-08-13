@@ -19,6 +19,7 @@ public class UserService {
             return;
         else{
             User newUser= User.builder()
+                    .id(event.getUserId())
                     .email(event.getEmail())
                     .username(event.getUsername())
                     .build();
