@@ -15,9 +15,16 @@ public class KafkaConsumer {
    private ObjectMapper objectMapper;
 
    @KafkaListener(topics = "user-registered", groupId = "task-group")
-   public void consume(byte[] message){
+   public void consume(byte[] message) throws Exception{
       UserRegisteredEvent event =
               objectMapper.readValue(message, UserRegisteredEvent.class);
       userService.createUserIfNotExists(event);
    }
+
+   /* To test Dead Letter Topic
+     public void consume(byte[] message) throws Exception{
+      System.out.println("Received message - intentionally failing");
+      throw new RuntimeException("Testing DLT");
+     }
+    */
 }
