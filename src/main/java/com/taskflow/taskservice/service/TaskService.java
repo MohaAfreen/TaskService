@@ -7,6 +7,7 @@ import com.taskflow.taskservice.enums.TaskStatus;
 import com.taskflow.taskservice.exception.TaskNotFoundException;
 import com.taskflow.taskservice.repository.TaskRepository;
 import com.taskflow.taskservice.utilities.TaskMapper;
+import jakarta.transaction.Transactional;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
@@ -36,6 +37,7 @@ public class TaskService {
         return TaskMapper.toDTO(taskRepository.save(task));
     }
 
+    @Transactional
     public TaskResponse updateTask(TaskRequest request, Long taskid){
         Task task= taskRepository.findById(taskid)
                 .orElseThrow(() -> new TaskNotFoundException("Task not found"));
