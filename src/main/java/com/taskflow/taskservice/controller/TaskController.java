@@ -59,4 +59,9 @@ public class TaskController {
                 .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body("Task service unavailable");
     }
+
+    @GetMapping("/test-ratelimit")
+    public ResponseEntity<String> testRateLimit() {
+        return ResponseEntity.ok("Task Service is healthy");
+    }
 }
