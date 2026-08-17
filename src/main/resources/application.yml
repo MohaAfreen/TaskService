@@ -1,7 +1,10 @@
 spring:
+  data:
+    redis:
+      host: redis
+      port: 6379
   kafka:
     bootstrap-servers: kafka:9092
-
     consumer:
       group-id: task-group
       auto-offset-reset: earliest
@@ -13,3 +16,7 @@ spring:
         json:
           trusted:
             packages: "*"
+  logging:
+    level:
+      org.springframework.cache: TRACE
+      org.springframework.data.redis: DEBUG

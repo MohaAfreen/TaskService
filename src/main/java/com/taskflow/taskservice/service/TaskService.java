@@ -7,21 +7,29 @@ import com.taskflow.taskservice.enums.TaskStatus;
 import com.taskflow.taskservice.exception.TaskNotFoundException;
 import com.taskflow.taskservice.repository.TaskRepository;
 import com.taskflow.taskservice.utilities.TaskMapper;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
 
-    private TaskRepository taskRepository;
+    private final TaskRepository taskRepository;
+    private final CacheManager cacheManager;
 
-    public TaskService(TaskRepository taskRepository) {
+    public TaskService(TaskRepository taskRepository, CacheManager cacheManager) {
         this.taskRepository = taskRepository;
+        this.cacheManager= cacheManager;
     }
 
+    @CacheEvict(value="tasks", key="#userId")
     public TaskResponse createTask(TaskRequest request,Long userId){
         request.setStatus(TaskStatus.TODO);
         Task task= TaskMapper.toEntity(request,userId);
@@ -33,10 +41,18 @@ public class TaskService {
                 .orElseThrow(() -> new TaskNotFoundException("Task not found"));
         Task updatedTask= TaskMapper.toEntity(request,task.getUserId());
         updatedTask.setId(taskid);
-        return TaskMapper.toDTO(taskRepository.save(updatedTask));
+        Task savedTask = taskRepository.save(updatedTask);
+        Long userId= savedTask.getUserId();
+        Cache cache = cacheManager.getCache("tasks");
+        if (cache != null) {
+            cache.evict(userId);
+        }
+        return TaskMapper.toDTO(savedTask);
     }
 
+    @Cacheable(value="tasks", key="#userId")
     public List<TaskResponse> getTasksById(Long userId){
+        System.out.println("Fetching tasks from MySQL...");
         return taskRepository.findTaskByUserId(userId)
                 .stream()
                 .map(TaskMapper::toDTO)
@@ -45,6 +61,13 @@ public class TaskService {
     }
 
     public void deleteTaskById(Long taskId){
+        Task task= taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found"));
+        Long userId = task.getUserId();
         taskRepository.deleteById(taskId);
+        Cache cache = cacheManager.getCache("tasks");
+        if (cache != null) {
+            cache.evict(userId);
+        }
     }
 }
